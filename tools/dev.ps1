@@ -1,18 +1,33 @@
 <#
 .SYNOPSIS
     Compila, instala y arranca el servidor en un solo paso.
+.PARAMETER Clean
+    Fuerza limpieza de caché CMake (build -Clean) e instalación forzada (install -Force).
 .EXAMPLE
     .\tools\dev.ps1
-    .\tools\dev.ps1 -Map de_inferno
+    .\tools\dev.ps1 -Clean -Map de_inferno
 #>
 
-param([string]$Map, [int]$MaxPlayers, [string]$ExtraArgs)
+param(
+    [string]$Map,
+    [int]$MaxPlayers,
+    [string]$ExtraArgs,
+    [switch]$Clean
+)
 
 Write-Host "=== COMPILANDO ===" -ForegroundColor Cyan
-& "$PSScriptRoot\build.ps1"
+if ($Clean) {
+    & "$PSScriptRoot\build.ps1" -Clean
+} else {
+    & "$PSScriptRoot\build.ps1"
+}
 
 Write-Host "=== INSTALANDO ===" -ForegroundColor Cyan
-& "$PSScriptRoot\install.ps1"
+if ($Clean) {
+    & "$PSScriptRoot\install.ps1" -Force
+} else {
+    & "$PSScriptRoot\install.ps1"
+}
 
 Write-Host "=== INICIANDO SERVIDOR ===" -ForegroundColor Cyan
 $runArgs = @()
