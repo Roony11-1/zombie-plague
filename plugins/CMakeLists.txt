@@ -1,2 +1,6 @@
-# Añadir cada plugin
-add_subdirectory(example_plugin)
+file(GLOB PLUGIN_DIRS LIST_DIRECTORIES true RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} *)
+foreach(PLUGIN_DIR ${PLUGIN_DIRS})
+    if(IS_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/${PLUGIN_DIR})
+        add_subdirectory(${PLUGIN_DIR})
+    endif()
+endforeach()

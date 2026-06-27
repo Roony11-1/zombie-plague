@@ -1,11 +1,8 @@
 <#
 .SYNOPSIS
-    Compila todos los plugins del proyecto.
+    Compila solo los plugins que no están listados en .buildignore.
 .PARAMETER Clean
-    Si se especifica, borra la caché de CMake antes de compilar.
-.EXAMPLE
-    .\tools\build.ps1
-    .\tools\build.ps1 -Clean
+    Limpia la caché de CMake antes de compilar.
 #>
 
 param([switch]$Clean)
@@ -18,6 +15,26 @@ $BuildDir = Join-Path $ProjectRoot "build"
 $CMakeGenerator = "Visual Studio 18 2026"
 $CMakeArch = "Win32"
 $Configuration = if (Test-Path Variable:env_BUILD_CONFIG) { $env_BUILD_CONFIG } else { "Release" }
+
+# --- Leer .buildignore ---
+$IgnoreFile = Join-Path $ProjectRoot ".buildignore"
+$IgnoredPlugins = @()
+if (Test-Path $IgnoreFile) {
+    $IgnoredPlugins = Get-Content $IgnoreFile | ForEach-Object { $_.Trim() } | Where-Object { $_ -and $_ -notmatch '^\s*#' }
+    if ($IgnoredPlugins.Count -gt 0) {
+        Write-Host "==> Plugins ignorados: $($IgnoredPlugins -join ', ')" -ForegroundColor DarkYellow
+    }
+}
+
+# --- Lista de plugins a compilar ---
+$PluginsDir = Join-Path $ProjectRoot "plugins"
+$AllPluginDirs = Get-ChildItem -Path $PluginsDir -Directory
+$Targets = $AllPluginDirs | Where-Object { $_.Name -notin $IgnoredPlugins }
+
+if ($Targets.Count -eq 0) {
+    Write-Warning "No hay plugins para compilar. Revisa .buildignore o la carpeta plugins."
+    exit 0
+}
 
 Write-Host "==> Proyecto: $ProjectRoot" -ForegroundColor Cyan
 Write-Host "==> Build dir: $BuildDir" -ForegroundColor Cyan
@@ -42,11 +59,14 @@ if ($Clean -or -not (Test-Path $CacheFile)) {
     Write-Host "==> CMake ya configurado. Usando caché existente." -ForegroundColor Green
 }
 
-Write-Host "==> Compilando todos los plugins ($Configuration)..." -ForegroundColor Yellow
+Write-Host "==> Compilando plugins ($Configuration)..." -ForegroundColor Yellow
 Push-Location $BuildDir
 try {
-    cmake --build . --config $Configuration
-    if ($LASTEXITCODE -ne 0) { throw "Error en la compilación." }
+    foreach ($target in $Targets) {
+        Write-Host "   -> $($target.Name)" -ForegroundColor Gray
+        cmake --build . --config $Configuration --target $($target.Name)
+        if ($LASTEXITCODE -ne 0) { throw "Error compilando $($target.Name)." }
+    }
 } finally { Pop-Location }
 
 Write-Host "==> Compilación completada exitosamente." -ForegroundColor Green
