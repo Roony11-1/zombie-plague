@@ -1,9 +1,11 @@
-﻿set(PLUGIN_NAME {{PLUGIN_NAME}})
+set(PLUGIN_NAME {{PLUGIN_NAME}})
 set(SOURCES main.cpp)
 
 add_library(${PLUGIN_NAME} SHARED ${SOURCES})
 
-target_link_libraries(${PLUGIN_NAME} PRIVATE hlsdk_base metamod)
+# Orden importante: primero el SDK del juego, luego el base
+target_link_libraries(${PLUGIN_NAME} PRIVATE hlsdk_game hlsdk_base metamod)
+
 target_include_directories(${PLUGIN_NAME} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 
 set_target_properties(${PLUGIN_NAME} PROPERTIES

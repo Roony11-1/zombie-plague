@@ -1,10 +1,13 @@
-﻿#include <string.h>
+#include <string.h>
 #include <extdll.h>
 #include <meta_api.h>
+#include <cbase.h>
+#include <player.h>
+#include <util.h>
+#include <weapons.h>
 
 enginefuncs_t g_engfuncs;
 globalvars_t  *gpGlobals;
-meta_globals_t *gpMetaGlobals;
 
 C_DLLEXPORT void WINAPI GiveFnptrsToDll(enginefuncs_t *pengfuncsFromEngine, globalvars_t *pGlobals)
 {
@@ -14,12 +17,12 @@ C_DLLEXPORT void WINAPI GiveFnptrsToDll(enginefuncs_t *pengfuncsFromEngine, glob
 
 plugin_info_t Plugin_info = {
     META_INTERFACE_VERSION,
-    "zp_core",
-    "0.1",
+    "{{PLUGIN_NAME}}",
+    "{{VERSION}}",
     __DATE__,
-    "Roony11-1",
-    "https://github.com/Roony11-1",
-    "ZP_CORE",
+    "{{AUTHOR}}",
+    "{{URL}}",
+    "{{LOG_TAG}}",
     PT_ANYTIME,
     PT_ANYTIME
 };
@@ -29,11 +32,75 @@ C_DLLEXPORT int Meta_Query(char *iv, plugin_info_t **pinfo, mutil_funcs_t *pMeta
     return TRUE;
 }
 
-void OnClientPutInServer( edict_t *pEntity )
-{
-    g_engfuncs.pfnServerPrint("Entro!\n");
-} 
+// -----------------------------------------------
+// Utilidades para manipular jugadores
+// -----------------------------------------------
 
+void RemoveAllPlayerItems(CBasePlayer *pPlayer)
+{
+    for (int i = 0; i < MAX_ITEM_TYPES; i++)
+    {
+        CBasePlayerItem *pItem = pPlayer->m_rgpPlayerItems[i];
+        while (pItem)
+        {
+            CBasePlayerItem *pNext = pItem->m_pNext;
+            pPlayer->RemovePlayerItem(pItem);
+            pItem = pNext;
+        }
+    }
+}
+
+void UTIL_ClientPrintAll(PRINT_TYPE msg_dest, const char *msg)
+{
+    for (int i = 1; i <= gpGlobals->maxClients; i++)
+    {
+        edict_t *pEdict = INDEXENT(i);
+        if (pEdict && !pEdict->free)
+        {
+            g_engfuncs.pfnClientPrintf(pEdict, msg_dest, msg);
+        }
+    }
+}
+
+void GiveWeaponToPlayer(CBasePlayer *pPlayer, const char *weaponName)
+{
+    edict_t *pWeaponEdict = g_engfuncs.pfnCreateNamedEntity(MAKE_STRING(weaponName));
+    if (!pWeaponEdict) return;
+    
+    CBaseEntity *pWeaponEntity = CBaseEntity::Instance(pWeaponEdict);
+    if (!pWeaponEntity) return;
+    
+    pWeaponEntity->Spawn();
+    
+    CBasePlayerItem *pItem = (CBasePlayerItem *)pWeaponEntity;
+    pPlayer->AddPlayerItem(pItem);
+}
+
+// -----------------------------------------------
+// Hook: jugador entra al servidor
+// -----------------------------------------------
+void OnClientPutInServer(edict_t *pEntity)
+{
+    if (pEntity)
+    {
+        CBasePlayer *pPlayer = (CBasePlayer *)CBaseEntity::Instance(pEntity);
+        if (pPlayer && pPlayer->IsAlive())
+        {
+            pPlayer->pev->health = 2000;
+            pPlayer->pev->max_health = 2000;
+
+            RemoveAllPlayerItems(pPlayer);
+            GiveWeaponToPlayer(pPlayer, "weapon_knife");
+
+            UTIL_ClientPrintAll(print_chat, "[ZP] Un zombie ha llegado!\n");
+        }
+    }
+    RETURN_META(MRES_IGNORED);
+}
+
+// -----------------------------------------------
+// Tablas de funciones (38 miembros)
+// -----------------------------------------------
 DLL_FUNCTIONS g_DllFunctionTable = {
     NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
     NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
@@ -86,7 +153,7 @@ C_DLLEXPORT int GetEngineFunctions_Post(enginefuncs_t *pTable, int *iv) {
 
 C_DLLEXPORT int Meta_Attach(PLUG_LOADTIME now, META_FUNCTIONS *pFunctionTable,
                             meta_globals_t *pMGlobals, gamedll_funcs_t *pGamedllFuncs) {
-    g_engfuncs.pfnServerPrint("zp_core attached!\n");
+    g_engfuncs.pfnServerPrint("{{PLUGIN_NAME}} attached!\n");
     memcpy(pFunctionTable, &gMetaFunctionTable, sizeof(META_FUNCTIONS));
     return TRUE;
 }

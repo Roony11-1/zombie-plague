@@ -1,31 +1,24 @@
-#include <string.h>
+﻿#include <string.h>
 #include <extdll.h>
 #include <meta_api.h>
 
-// =============================================
-// Variables globales del engine
-// =============================================
 enginefuncs_t g_engfuncs;
 globalvars_t  *gpGlobals;
 
-// Función llamada por el motor al cargar la DLL (exportada sin decorar vía .def)
 C_DLLEXPORT void WINAPI GiveFnptrsToDll(enginefuncs_t *pengfuncsFromEngine, globalvars_t *pGlobals)
 {
     memcpy(&g_engfuncs, pengfuncsFromEngine, sizeof(enginefuncs_t));
     gpGlobals = pGlobals;
 }
 
-// =============================================
-// Información del plugin
-// =============================================
 plugin_info_t Plugin_info = {
     META_INTERFACE_VERSION,
-    "{{PLUGIN_NAME}}",             // nombre visible
-    "{{VERSION}}",                 // versión
+    "{{PLUGIN_NAME}}",
+    "{{VERSION}}",
     __DATE__,
-    "{{AUTHOR}}",                  // autor
-    "{{URL}}",                     // url
-    "{{LOG_TAG}}",                 // logtag
+    "{{AUTHOR}}",
+    "{{URL}}",
+    "{{LOG_TAG}}",
     PT_ANYTIME,
     PT_ANYTIME
 };
@@ -35,9 +28,6 @@ C_DLLEXPORT int Meta_Query(char *iv, plugin_info_t **pinfo, mutil_funcs_t *pMeta
     return TRUE;
 }
 
-// =============================================
-// Tablas de funciones del juego (todas a NULL)
-// =============================================
 DLL_FUNCTIONS g_DllFunctionTable = { NULL };
 DLL_FUNCTIONS g_DllFunctionTable_Post = { NULL };
 NEW_DLL_FUNCTIONS g_NewDllFunctionTable = { NULL };
@@ -60,9 +50,6 @@ C_DLLEXPORT int GetNewDLLFunctions_Post(NEW_DLL_FUNCTIONS *pTable, int *iv) {
     return TRUE;
 }
 
-// =============================================
-// Tabla de funciones de Meta
-// =============================================
 META_FUNCTIONS gMetaFunctionTable = {
     NULL, NULL,
     GetEntityAPI2, GetEntityAPI2_Post,
@@ -70,9 +57,6 @@ META_FUNCTIONS gMetaFunctionTable = {
     GetEngineFunctions, GetEngineFunctions_Post
 };
 
-// =============================================
-// Tablas de funciones del engine (a NULL)
-// =============================================
 enginefuncs_t g_EngineFunctionsTable = { NULL };
 enginefuncs_t g_EngineFunctionsTable_Post = { NULL };
 
@@ -85,9 +69,6 @@ C_DLLEXPORT int GetEngineFunctions_Post(enginefuncs_t *pTable, int *iv) {
     return TRUE;
 }
 
-// =============================================
-// Carga / descarga del plugin
-// =============================================
 C_DLLEXPORT int Meta_Attach(PLUG_LOADTIME now, META_FUNCTIONS *pFunctionTable,
                             meta_globals_t *pMGlobals, gamedll_funcs_t *pGamedllFuncs) {
     g_engfuncs.pfnServerPrint("{{PLUGIN_NAME}} attached!\n");

@@ -1,4 +1,4 @@
-﻿EXPORTS
+EXPORTS
     GiveFnptrsToDll = _GiveFnptrsToDll@8
     Meta_Attach
     Meta_Detach

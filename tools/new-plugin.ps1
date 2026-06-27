@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-    Crea un nuevo plugin a partir de la plantilla templates/plugin.
+    Crea un nuevo plugin a partir de la plantilla templates/plugin o templates/plugin_game.
 .PARAMETER Name
     Nombre del nuevo plugin (se creará en plugins/<Name>).
 .PARAMETER Author
@@ -9,9 +9,11 @@
     Versión inicial (por defecto "0.1").
 .PARAMETER Url
     URL del proyecto (por defecto "https://github.com/Roony11-1").
+.PARAMETER GameMode
+    Usa la plantilla para modos de juego (incluye SDKs del juego y utilidades para jugadores).
 .EXAMPLE
     .\tools\new-plugin.ps1 zombie_plague
-    .\tools\new-plugin.ps1 zombie_plague -Author "Otro" -Version "1.0"
+    .\tools\new-plugin.ps1 zombie_plague -GameMode -Author "Otro" -Version "1.0"
 #>
 
 param(
@@ -19,13 +21,21 @@ param(
     [string]$Name,
     [string]$Author = "Roony11-1",
     [string]$Version = "0.1",
-    [string]$Url = "https://github.com/Roony11-1"
+    [string]$Url = "https://github.com/Roony11-1",
+    [switch]$GameMode
 )
 
 $ErrorActionPreference = "Stop"
 
 $ProjectRoot = (Get-Item "$PSScriptRoot\..").FullName
-$TemplateDir = Join-Path $ProjectRoot "templates\plugin"
+
+# Seleccionar la plantilla según el parámetro
+if ($GameMode) {
+    $TemplateDir = Join-Path $ProjectRoot "templates\plugin_game"
+} else {
+    $TemplateDir = Join-Path $ProjectRoot "templates\plugin"
+}
+
 $PluginsDir = Join-Path $ProjectRoot "plugins"
 $NewPluginDir = Join-Path $PluginsDir $Name
 
@@ -66,6 +76,9 @@ Get-ChildItem -Path $NewPluginDir -Recurse -File | ForEach-Object {
 }
 
 Write-Host "Plugin '$Name' creado en $NewPluginDir" -ForegroundColor Green
+if ($GameMode) {
+    Write-Host "Plantilla: juego (con SDKs de ReGameDLL y utilidades para jugadores)" -ForegroundColor Cyan
+}
 Write-Host "Autor : $Author"
 Write-Host "Versión: $Version"
 Write-Host "URL   : $Url"
