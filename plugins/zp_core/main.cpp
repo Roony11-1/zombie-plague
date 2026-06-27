@@ -3,11 +3,14 @@
 #include <meta_api.h>
 #include "reapi/reapi.h"
 #include "server/server.h"
+#include "weapons/weapons.h"
+#include <enginecallback.h>
 
 enginefuncs_t g_engfuncs;
 globalvars_t  *gpGlobals;
 meta_globals_t *gpMetaGlobals;
 gamedll_funcs_t *gpGamedllFuncs;
+
 
 C_DLLEXPORT void WINAPI GiveFnptrsToDll(enginefuncs_t *pengfuncsFromEngine, globalvars_t *pGlobals) {
     memcpy(&g_engfuncs, pengfuncsFromEngine, sizeof(enginefuncs_t));
@@ -33,19 +36,82 @@ C_DLLEXPORT int Meta_Query(char *iv, plugin_info_t **pinfo, mutil_funcs_t *pMeta
 
 void OnClientPutInServer(edict_t *pEntity) {
     if (pEntity && g_pReGameFuncs) {
-        g_engfuncs.pfnServerPrint("[ZP] Jugador equipado con cuchillo!\n");
+        //g_engfuncs.pfnServerPrint("[ZP] Jugador equipado con cuchillo!\n");
     }
     RETURN_META(MRES_IGNORED);
 }
 
+void OnClientCommand(edict_t *pEntity) {
+    const char *cmd = CMD_ARGV(0);
+
+    if (strcmp(cmd, "get_wpn") == 0) {
+        if (CMD_ARGC() < 2) {
+            g_engfuncs.pfnClientPrintf(pEntity, print_console, "[ZP] Uso: get_wpn <nombre del arma>\n");
+            RETURN_META(MRES_IGNORED);
+        }
+
+        const char *weaponName = CMD_ARGV(1);
+        ZP_GiveWeapon(pEntity, weaponName);
+
+        char buffer[128];
+        snprintf(buffer, sizeof(buffer), "[ZP] Has recibido: %s\n", weaponName);
+        g_engfuncs.pfnClientPrintf(pEntity, print_console, buffer);
+    }
+
+    RETURN_META(MRES_IGNORED);
+}
+
 DLL_FUNCTIONS g_DllFunctionTable = {
-    NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
-    NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
-    NULL, NULL, NULL, OnClientPutInServer, NULL, NULL,
-    NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
-    NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
-    NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
-    NULL, NULL, NULL, NULL
+    NULL,                               // pfnGameInit              [0]
+    NULL,                               // pfnSpawn                 [1]
+    NULL,                               // pfnThink                 [2]
+    NULL,                               // pfnUse                   [3]
+    NULL,                               // pfnTouch                 [4]
+    NULL,                               // pfnBlocked               [5]
+    NULL,                               // pfnKeyValue              [6]
+    NULL,                               // pfnSave                  [7]
+    NULL,                               // pfnRestore               [8]
+    NULL,                               // pfnSetAbsBox             [9]
+    NULL,                               // pfnSaveWriteFields       [10]
+    NULL,                               // pfnSaveReadFields        [11]
+    NULL,                               // pfnSaveGlobalState       [12]
+    NULL,                               // pfnRestoreGlobalState    [13]
+    NULL,                               // pfnResetGlobalState      [14]
+    NULL,                               // pfnClientConnect         [15]
+    NULL,                               // pfnClientDisconnect      [16]
+    NULL,                               // pfnClientKill            [17]
+    OnClientPutInServer,                // pfnClientPutInServer     [18]
+    OnClientCommand,                    // pfnClientCommand         [19]
+    NULL,                               // pfnClientUserInfoChanged [20]
+    NULL,                               // pfnServerActivate        [21]
+    NULL,                               // pfnServerDeactivate      [22]
+    NULL,                               // pfnPlayerPreThink        [23]
+    NULL,                               // pfnPlayerPostThink       [24]
+    NULL,                               // pfnStartFrame            [25]
+    NULL,                               // pfnParmsNewLevel         [26]
+    NULL,                               // pfnParmsChangeLevel      [27]
+    NULL,                               // pfnGetGameDescription    [28]
+    NULL,                               // pfnPlayerCustomization   [29]
+    NULL,                               // pfnSpectatorConnect      [30]
+    NULL,                               // pfnSpectatorDisconnect   [31]
+    NULL,                               // pfnSpectatorThink        [32]
+    NULL,                               // pfnSys_Error             [33]
+    NULL,                               // pfnPM_Move               [34]
+    NULL,                               // pfnPM_Init               [35]
+    NULL,                               // pfnPM_FindTextureType    [36]
+    NULL,                               // pfnSetupVisibility       [37]
+    NULL,                               // pfnUpdateClientData      [38]
+    NULL,                               // pfnAddToFullPack         [39]
+    NULL,                               // pfnCreateBaseline        [40]
+    NULL,                               // pfnRegisterEncoders      [41]
+    NULL,                               // pfnGetWeaponData         [42]
+    NULL,                               // pfnCmdStart              [43]
+    NULL,                               // pfnCmdEnd                [44]
+    NULL,                               // pfnConnectionlessPacket  [45]
+    NULL,                               // pfnGetHullBounds         [46]
+    NULL,                               // pfnCreateInstancedBaselines [47]
+    NULL,                               // pfnInconsistentFile      [48]
+    NULL                                // pfnAllowLagCompensation  [49]
 };
 
 DLL_FUNCTIONS g_DllFunctionTable_Post = { NULL };
@@ -91,13 +157,14 @@ C_DLLEXPORT int GetEngineFunctions_Post(enginefuncs_t *pTable, int *iv) {
 C_DLLEXPORT int Meta_Attach(PLUG_LOADTIME now, META_FUNCTIONS *pFunctionTable,
                             meta_globals_t *pMGlobals, gamedll_funcs_t *pGamedllFuncs) {
     gpMetaGlobals = pMGlobals;
+    gpGamedllFuncs = pGamedllFuncs;
 
-    ZP_SetupServerSettings();
-           
     if (ZP_InitReGameApi())
         g_engfuncs.pfnServerPrint("ReGameDLL API inicializada correctamente.\n");
     else
         g_engfuncs.pfnServerPrint("ERROR: No se pudo obtener la API de ReGameDLL.\n");
+
+    ZP_SetupServerSettings();
 
     g_engfuncs.pfnServerPrint("zp_core attached!\n");
     memcpy(pFunctionTable, &gMetaFunctionTable, sizeof(META_FUNCTIONS));

@@ -2,6 +2,9 @@
 
 #include <extdll.h>
 
+class CBasePlayer;
+class CBasePlayerItem;
+
 struct ReGameFuncs_t 
 {
     edict_t *(*CREATE_NAMED_ENTITY2)(string_t iClass);
