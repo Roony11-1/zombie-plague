@@ -1,0 +1,11 @@
+EXPORTS
+    GiveFnptrsToDll = _GiveFnptrsToDll@8
+    Meta_Attach
+    Meta_Detach
+    Meta_Query
+    GetEntityAPI2
+    GetEntityAPI2_Post
+    GetNewDLLFunctions
+    GetNewDLLFunctions_Post
+    GetEngineFunctions
+    GetEngineFunctions_Post

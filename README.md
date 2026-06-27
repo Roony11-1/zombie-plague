@@ -9,4 +9,4 @@ https://github.com/rehlds/rehlds/releases
 - ReGameDll_CS [5.30.0.814]
 https://github.com/rehlds/ReGameDLL_CS/releases
 
-# los SDK (Headers) estan versionados en el repositorio
+# los SDK (Headers) estan versionados en el repositorio  
