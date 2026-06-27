@@ -50,6 +50,11 @@ if (-not (Test-Path $PluginsDirIni)) {
     New-Item -ItemType Directory -Path $PluginsDirIni -Force | Out-Null
 }
 
+# --- Entradas protegidas (siempre deben aparecer en plugins.ini) ---
+$ProtectedEntries = @(
+    "win32 addons/ebot/dlls/ebot.dll"
+)
+
 Write-Host "==> Instalando plugins en $ServerDir" -ForegroundColor Cyan
 Write-Host "    Configuración: $Configuration" -ForegroundColor Cyan
 Write-Host "    plugins.ini:   $PluginsIniPath" -ForegroundColor Cyan
@@ -151,6 +156,22 @@ foreach ($dll in $Dlls) {
     } else {
         Write-Host "    Añadido a plugins.ini" -ForegroundColor Magenta
         $WorkingLines.Add($entry) | Out-Null
+        $changesMade = $true
+    }
+}
+
+# --- Garantizar entradas protegidas ---
+foreach ($protected in $ProtectedEntries) {
+    $exists = $false
+    foreach ($line in $WorkingLines) {
+        if ($line -eq $protected) {
+            $exists = $true
+            break
+        }
+    }
+    if (-not $exists) {
+        Write-Host "  Añadiendo entrada protegida: $protected" -ForegroundColor Magenta
+        $WorkingLines.Add($protected) | Out-Null
         $changesMade = $true
     }
 }
