@@ -1,12 +1,16 @@
 ﻿set(PLUGIN_NAME zp_core)
-set(SOURCES main.cpp)
+
+# Recopila todos los .cpp dentro del plugin
+file(GLOB_RECURSE SOURCES CONFIGURE_DEPENDS
+    ${CMAKE_CURRENT_SOURCE_DIR}/*.cpp
+)
+
+# Por si acaso, excluye archivos que no quieras compilar (ej. backups)
+# list(FILTER SOURCES EXCLUDE REGEX ".*\.bak\.cpp$")
 
 add_library(${PLUGIN_NAME} SHARED ${SOURCES})
 
-# Enlazar el SDK base y Metamod
 target_link_libraries(${PLUGIN_NAME} PRIVATE hlsdk_base metamod)
-
-# Resto de configuración...
 target_include_directories(${PLUGIN_NAME} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 
 set_target_properties(${PLUGIN_NAME} PROPERTIES
