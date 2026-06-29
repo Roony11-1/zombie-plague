@@ -3,6 +3,8 @@ set(SOURCES main.cpp)
 
 add_library(${PLUGIN_NAME} SHARED ${SOURCES})
 
+target_use_infrastructure(${PLUGIN_NAME})
+
 target_link_libraries(${PLUGIN_NAME} PRIVATE hlsdk_base metamod)
 target_include_directories(${PLUGIN_NAME} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 

@@ -41,4 +41,5 @@ else()
     set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O3 -msse3 -flto -funroll-loops -fomit-frame-pointer -fno-stack-protector -static-libgcc -static-libstdc++")
 endif()
 
+add_subdirectory(infrastructure)
 add_subdirectory(plugins)
