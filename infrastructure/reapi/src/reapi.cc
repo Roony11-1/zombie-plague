@@ -1,36 +1,55 @@
-#include "reapi.h"
+#include "ReApi.h"
 
 #ifdef _WIN32
 #include <windows.h>
 #endif
 
-IReGameApi *g_pReGameApi = nullptr;
-const ReGameFuncs_t *g_pReGameFuncs = nullptr;
+using CreateInterfaceFunction = void* (*)(const char*, int*);
 
-using CreateInterfaceFn = void *(*)(const char *, int *);
-
-bool ZP_InitReGameApi()
+bool ReApi::Initialize()
 {
 #ifdef _WIN32
-    HMODULE hGameDll = GetModuleHandleA("mp.dll");
-    if (!hGameDll)
+    HMODULE gameModule = GetModuleHandleA("mp.dll");
+    if (!gameModule)
+    {
         return false;
+    }
 
-    auto ci = reinterpret_cast<CreateInterfaceFn>(
-        GetProcAddress(hGameDll, "CreateInterface"));
+    auto createInterface = reinterpret_cast<CreateInterfaceFunction>(
+        GetProcAddress(gameModule, "CreateInterface"));
 
-    if (!ci)
+    if (!createInterface)
+    {
         return false;
+    }
 
-    g_pReGameApi = static_cast<IReGameApi *>(
-        ci("VRE_GAMEDLL_API_VERSION001", nullptr));
+    api = static_cast<IReGameApi*>(
+        createInterface("VRE_GAMEDLL_API_VERSION001", nullptr));
 
-    if (!g_pReGameApi)
+    if (!api)
+    {
         return false;
+    }
 
-    g_pReGameFuncs = g_pReGameApi->GetFuncs();
-    return g_pReGameFuncs != nullptr;
+    functions = api->GetFuncs();
+
+    return functions != nullptr;
 #else
     return false;
 #endif
+}
+
+IReGameApi& ReApi::Api() const
+{
+    return *api;
+}
+
+const ReGameFunctions& ReApi::Functions() const
+{
+    return *functions;
+}
+
+bool ReApi::IsInitialized() const 
+{
+    return (api != nullptr) && (functions != nullptr);
 }

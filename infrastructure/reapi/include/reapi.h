@@ -2,7 +2,16 @@
 
 #include "IReGameApi.h"
 
-bool ZP_InitReGameApi();
+class ReApi
+{
+    public:
+        bool Initialize();
+        bool IsInitialized() const;
 
-extern IReGameApi *g_pReGameApi;
-extern const ReGameFuncs_t *g_pReGameFuncs;
+        const ReGameFunctions& Functions() const;
+        IReGameApi& Api() const;
+
+    private:
+        IReGameApi* api{};
+        const ReGameFunctions* functions{};
+};

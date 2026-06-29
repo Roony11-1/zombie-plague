@@ -1,13 +1,18 @@
 ﻿#include <string.h>
 #include <extdll.h>
 #include <meta_api.h>
-#include "reapi.h"
 #include <enginecallback.h>
+
+// --- NUEVO: incluimos el header de nuestra nueva clase ReApi ---
+#include "ReApi.h"   // Reemplaza al viejo <reapi.h>
 
 enginefuncs_t g_engfuncs;
 globalvars_t  *gpGlobals;
 meta_globals_t *gpMetaGlobals;
 gamedll_funcs_t *gpGamedllFuncs;
+
+// --- NUEVO: instancia global de ReApi (sustituye a punteros crudos) ---
+ReApi g_ReApi;
 
 
 C_DLLEXPORT void WINAPI GiveFnptrsToDll(enginefuncs_t *pengfuncsFromEngine, globalvars_t *pGlobals) {
@@ -33,8 +38,10 @@ C_DLLEXPORT int Meta_Query(char *iv, plugin_info_t **pinfo, mutil_funcs_t *pMeta
 }
 
 void OnClientPutInServer(edict_t *pEntity) {
-    if (pEntity && g_pReGameFuncs) {
-        //g_engfuncs.pfnServerPrint("[ZP] Jugador equipado con cuchillo!\n");
+    if (pEntity && g_ReApi.IsInitialized()) 
+    {
+        // Ejemplo de uso:
+        // g_engfuncs.pfnServerPrint("[ZP] Jugador equipado con cuchillo!\n");
     }
     RETURN_META(MRES_IGNORED);
 }
@@ -59,7 +66,7 @@ DLL_FUNCTIONS g_DllFunctionTable = {
     NULL,                               // pfnClientDisconnect      [16]
     NULL,                               // pfnClientKill            [17]
     OnClientPutInServer,                // pfnClientPutInServer     [18]
-    NULL,                    // pfnClientCommand         [19]
+    NULL,                               // pfnClientCommand         [19]
     NULL,                               // pfnClientUserInfoChanged [20]
     NULL,                               // pfnServerActivate        [21]
     NULL,                               // pfnServerDeactivate      [22]
@@ -137,10 +144,13 @@ C_DLLEXPORT int Meta_Attach(PLUG_LOADTIME now, META_FUNCTIONS *pFunctionTable,
     gpMetaGlobals = pMGlobals;
     gpGamedllFuncs = pGamedllFuncs;
 
-    if (ZP_InitReGameApi())
+    // --- MODIFICADO: usamos g_ReApi.Initialize() en lugar de Initialize() global ---
+    if (g_ReApi.Initialize()) {
         g_engfuncs.pfnServerPrint("ReGameDLL API inicializada correctamente.\n");
-    else
+    } else {
         g_engfuncs.pfnServerPrint("ERROR: No se pudo obtener la API de ReGameDLL.\n");
+        // Opcional: podrías retornar FALSE si la API es crítica
+    }
 
     g_engfuncs.pfnServerPrint("zp_core attached!\n");
     memcpy(pFunctionTable, &gMetaFunctionTable, sizeof(META_FUNCTIONS));
