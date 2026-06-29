@@ -1,9 +1,7 @@
 ﻿#include <string.h>
 #include <extdll.h>
 #include <meta_api.h>
-#include "reapi/reapi.h"
-#include "server/server.h"
-#include "weapons/weapons.h"
+#include "reapi.h"
 #include <enginecallback.h>
 
 enginefuncs_t g_engfuncs;
@@ -41,26 +39,6 @@ void OnClientPutInServer(edict_t *pEntity) {
     RETURN_META(MRES_IGNORED);
 }
 
-void OnClientCommand(edict_t *pEntity) {
-    const char *cmd = CMD_ARGV(0);
-
-    if (strcmp(cmd, "get_wpn") == 0) {
-        if (CMD_ARGC() < 2) {
-            g_engfuncs.pfnClientPrintf(pEntity, print_console, "[ZP] Uso: get_wpn <nombre del arma>\n");
-            RETURN_META(MRES_IGNORED);
-        }
-
-        const char *weaponName = CMD_ARGV(1);
-        ZP_GiveWeapon(pEntity, weaponName);
-
-        char buffer[128];
-        snprintf(buffer, sizeof(buffer), "[ZP] Has recibido: %s\n", weaponName);
-        g_engfuncs.pfnClientPrintf(pEntity, print_console, buffer);
-    }
-
-    RETURN_META(MRES_IGNORED);
-}
-
 DLL_FUNCTIONS g_DllFunctionTable = {
     NULL,                               // pfnGameInit              [0]
     NULL,                               // pfnSpawn                 [1]
@@ -81,7 +59,7 @@ DLL_FUNCTIONS g_DllFunctionTable = {
     NULL,                               // pfnClientDisconnect      [16]
     NULL,                               // pfnClientKill            [17]
     OnClientPutInServer,                // pfnClientPutInServer     [18]
-    OnClientCommand,                    // pfnClientCommand         [19]
+    NULL,                    // pfnClientCommand         [19]
     NULL,                               // pfnClientUserInfoChanged [20]
     NULL,                               // pfnServerActivate        [21]
     NULL,                               // pfnServerDeactivate      [22]
@@ -163,8 +141,6 @@ C_DLLEXPORT int Meta_Attach(PLUG_LOADTIME now, META_FUNCTIONS *pFunctionTable,
         g_engfuncs.pfnServerPrint("ReGameDLL API inicializada correctamente.\n");
     else
         g_engfuncs.pfnServerPrint("ERROR: No se pudo obtener la API de ReGameDLL.\n");
-
-    ZP_SetupServerSettings();
 
     g_engfuncs.pfnServerPrint("zp_core attached!\n");
     memcpy(pFunctionTable, &gMetaFunctionTable, sizeof(META_FUNCTIONS));

@@ -1,12 +1,11 @@
 ﻿set(PLUGIN_NAME zp_core)
 set(SOURCES 
     main.cpp
-    reapi/reapi.cpp
-    server/server.cpp
-    weapons/weapons.cpp
 )
 
 add_library(${PLUGIN_NAME} SHARED ${SOURCES})
+
+target_use_infrastructure(${PLUGIN_NAME})
 
 # Enlazar el SDK base y Metamod
 target_link_libraries(${PLUGIN_NAME} PRIVATE hlsdk_base metamod)
