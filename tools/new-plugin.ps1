@@ -52,13 +52,29 @@ if (Test-Path $NewPluginDir) {
 # Copiar la plantilla
 Copy-Item -Path $TemplateDir -Destination $NewPluginDir -Recurse
 
+function ConvertTo-PascalCase($str) {
+    $culture = [System.Globalization.CultureInfo]::InvariantCulture
+    $textInfo = $culture.TextInfo
+    $words = $str -split '_'
+    $result = ""
+    foreach ($word in $words) {
+        if ($word.Length -gt 0) {
+            $result += $textInfo.ToTitleCase($word.ToLower())
+        }
+    }
+    return $result
+}
+
+$PluginClass = ConvertTo-PascalCase $Name
+
 # Reemplazar marcadores en los archivos copiados
 $Replacements = @{
-    '{{PLUGIN_NAME}}' = $Name
-    '{{VERSION}}'     = $Version
-    '{{AUTHOR}}'      = $Author
-    '{{URL}}'         = $Url
-    '{{LOG_TAG}}'     = $Name.ToUpper()
+    '{{PLUGIN_NAME}}'  = $Name
+    '{{VERSION}}'      = $Version
+    '{{AUTHOR}}'       = $Author
+    '{{URL}}'          = $Url
+    '{{LOG_TAG}}'      = $Name.ToUpper()
+    '{{PLUGIN_CLASS}}' = $PluginClass   # <-- AÑADIR ESTA LÍNEA
 }
 
 Get-ChildItem -Path $NewPluginDir -Recurse -File | ForEach-Object {

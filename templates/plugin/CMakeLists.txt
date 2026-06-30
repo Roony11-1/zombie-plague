@@ -1,8 +1,9 @@
 ﻿set(PLUGIN_NAME {{PLUGIN_NAME}})
-set(SOURCES main.cpp)
+set(SOURCES main.cc)
 
 add_library(${PLUGIN_NAME} SHARED ${SOURCES})
 
+# Usar infraestructura común (ReApi + MetaPlugin)
 target_use_infrastructure(${PLUGIN_NAME})
 
 target_link_libraries(${PLUGIN_NAME} PRIVATE hlsdk_base metamod)
