@@ -16,12 +16,12 @@ gamedll_funcs_t *gpGamedllFuncs;
 // ------------------------------------------------------------
 plugin_info_t Plugin_info = {
     META_INTERFACE_VERSION,
-    "{{PLUGIN_NAME}}",
-    "{{VERSION}}",
+    "zombie_plague",
+    "0.1",
     __DATE__,
-    "{{AUTHOR}}",
-    "{{URL}}",
-    "{{LOG_TAG}}",
+    "Roony11-1",
+    "https://github.com/Roony11-1",
+    "ZOMBIE_PLAGUE",
     PT_ANYTIME,
     PT_ANYTIME
 };
@@ -29,7 +29,7 @@ plugin_info_t Plugin_info = {
 // ------------------------------------------------------------
 //  Tu plugin concreto (hereda de MetaPlugin)  ¡CON MAGIA!
 // ------------------------------------------------------------
-class {{PLUGIN_CLASS}} : public MetaPlugin {
+class ZombiePlague : public MetaPlugin {
 public:
     META_HOOK(OnClientPutInServer) {
         // Lógica específica de tu plugin
@@ -121,16 +121,16 @@ C_DLLEXPORT int Meta_Attach(PLUG_LOADTIME now, META_FUNCTIONS* pFunctionTable,
 
     InitDllFunctionTables();
 
-    MetaPlugin::instance = new {{PLUGIN_CLASS}}();
+    MetaPlugin::instance = new ZombiePlague();
 
     if (!MetaPlugin::instance->Initialize(&g_engfuncs, gpGlobals, pMGlobals, pGamedllFuncs)) {
-        g_engfuncs.pfnServerPrint("ERROR: No se pudo inicializar {{PLUGIN_NAME}}.\n");
+        g_engfuncs.pfnServerPrint("ERROR: No se pudo inicializar zombie_plague.\n");
         delete MetaPlugin::instance;
         MetaPlugin::instance = nullptr;
         return FALSE;
     }
 
-    g_engfuncs.pfnServerPrint("{{PLUGIN_NAME}} attached!\n");
+    g_engfuncs.pfnServerPrint("zombie_plague attached!\n");
     memcpy(pFunctionTable, &gMetaFunctionTable, sizeof(META_FUNCTIONS));
     return TRUE;
 }
